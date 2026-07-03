@@ -47,6 +47,7 @@ fail=0
 
 # コミット対象ファイル一覧（tracked＋未追跡・gitignore除外）。
 # git 失敗（リポジトリ外等）は「無検出＝PASS」に化けるため fail-closed で止める。
+git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "❌ git worktree 外。fail-closed で異常終了。"; exit 2; }
 if ! files=$(git ls-files --cached --others --exclude-standard 2>/dev/null); then
   echo "❌ git ls-files に失敗（git リポジトリ外？）。fail-closed で異常終了。"
   exit 2
@@ -81,8 +82,10 @@ else
   echo "✅ 本文スキャン: 0 hits"
 fi
 
-# 2) 実データ（data/*.json・*.csv で .example でない）が追跡されていないか
-tracked_data=$(git ls-files 'data/*.json' 'data/*.csv' 2>/dev/null | grep -v '\.example\.' || true)
+# 2) 実データ（data/ 配下の .json/.csv で .example でない）がコミット候補に含まれないか。
+#    コミット候補一覧($files=tracked＋未追跡非ignore・任意の深さ)から判定するので、
+#    未追跡の実データ（gitignore漏れ）やネストしたパスも捕捉する。
+tracked_data=$(printf '%s\n' "$files" | grep -E '^data/.*\.(json|csv)$' | grep -v '\.example\.' || true)
 if [ -n "$tracked_data" ]; then
   echo "❌ 実データが追跡対象（gitignore漏れ）:"
   echo "$tracked_data"
