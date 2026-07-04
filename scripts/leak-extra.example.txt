@@ -1,0 +1,8 @@
+# 追加の識別子スキャンパターン（1行1正規表現・# と空行は無視）。
+# 実ファイル scripts/leak-extra.txt は gitignore（実識別子を tracked ファイルに置かないため）。
+# これは記入例。自分の本名・旧username・非公開ブランド名・プロジェクトID・非公開メール等を列挙する。
+# 例:
+# your-old-username
+# YourPrivateBrandName
+# your\.private\.mail
+# proj[0-9a-f]{8}
